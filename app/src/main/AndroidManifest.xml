@@ -20,6 +20,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight">
 
+        <!-- Recording Service -->
+        <service
+            android:name=".audio.RecordingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+
         <!-- MainActivity will be added in next phase -->
 
     </application>
