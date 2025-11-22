@@ -10,6 +10,7 @@ import com.bisonnotesai.android.audio.RecordingService
 import com.bisonnotesai.android.domain.model.Recording
 import com.bisonnotesai.android.domain.model.ProcessingStatus
 import com.bisonnotesai.android.domain.repository.RecordingRepository
+import com.bisonnotesai.android.transcription.TranscriptionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -24,7 +25,7 @@ import javax.inject.Inject
 
 /**
  * ViewModel for audio recording screen
- * Orchestrates audio recording, playback, and database operations
+ * Orchestrates audio recording, playback, transcription, and database operations
  */
 @HiltViewModel
 class AudioRecorderViewModel @Inject constructor(
@@ -32,7 +33,8 @@ class AudioRecorderViewModel @Inject constructor(
     private val audioRecorder: AudioRecorder,
     private val audioPlayer: AudioPlayer,
     private val fileManager: RecordingFileManager,
-    private val recordingRepository: RecordingRepository
+    private val recordingRepository: RecordingRepository,
+    private val transcriptionManager: TranscriptionManager
 ) : ViewModel() {
 
     // Recording state
@@ -260,6 +262,36 @@ class AudioRecorderViewModel @Inject constructor(
                     )
                 }
         }
+    }
+
+    /**
+     * Start transcription for a recording
+     */
+    fun startTranscription(recording: Recording) {
+        viewModelScope.launch {
+            val audioFilePath = recording.url ?: return@launch
+
+            // Start transcription job
+            transcriptionManager.startTranscription(
+                recordingId = recording.id,
+                audioFilePath = audioFilePath,
+                language = "en-US"
+            )
+
+            // Update recording status
+            recordingRepository.updateTranscriptionStatus(
+                id = recording.id,
+                status = ProcessingStatus.PENDING.name.lowercase(),
+                transcriptId = null
+            )
+        }
+    }
+
+    /**
+     * Cancel transcription for a recording
+     */
+    fun cancelTranscription(recordingId: String) {
+        transcriptionManager.cancelTranscription(recordingId)
     }
 
     /**
