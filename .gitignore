@@ -1,56 +1,39 @@
-# Xcode
-DerivedData/
+# Gradle files
+.gradle/
 build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata/
-*.xcscmblueprint
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
 
-# Xcode User Data (more comprehensive)
-*.xcuserstate
-*.xcuserdata/
-*.xcworkspace/xcuserdata/
-*.xcodeproj/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcuserdata/
+# Local configuration file
+local.properties
 
-# SwiftPM
-.build/
-
-# CocoaPods
-Pods/
-
-# Carthage
-Carthage/Build/
-
-# Fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/
-fastlane/test_output/
-
-# macOS
+# Android Studio
+*.iml
+.idea/
 .DS_Store
-**/.DS_Store
-.AppleDouble
-.LSOverride
-Icon?
-._*
-.Spotlight-V100
-.Trashes
+/captures
+.externalNativeBuild
+.cxx
 
-# Xcode Patch
-*.xcodeproj/*/project.xcworkspace/xcuserdata/
-*.xcodeproj/xcuserdata/
+# Built application files
+*.apk
+*.ap_
+*.aab
 
-# App-specific
-.idx/dev.nix
-BisonNotes AI/TEST_PLAN.md
+# Files for the ART/Dalvik VM
+*.dex
 
-.gemini/
-gha-creds-*.json
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Keystore files
+*.jks
+*.keystore
+
+# Log Files
+*.log
