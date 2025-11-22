@@ -12,19 +12,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.bisonnotesai.android.ui.navigation.Screen
 import com.bisonnotesai.android.ui.screen.RecordingsScreen
+import com.bisonnotesai.android.ui.screen.TranscriptDetailScreen
+import com.bisonnotesai.android.ui.screen.TranscriptsScreen
 import com.bisonnotesai.android.ui.theme.BisonNotesTheme
+import com.bisonnotesai.android.ui.viewmodel.TranscriptWithRecording
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Main activity for BisonNotes AI
- * Handles permission requests and hosts the main UI
+ * Handles permission requests and hosts the main UI with navigation
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -60,12 +69,70 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // Show permission prompt or main screen
                     if (hasRecordPermission) {
-                        RecordingsScreen()
+                        MainScreen()
                     } else {
                         PermissionScreen(
                             onRequestPermission = {
                                 recordPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MainScreen() {
+        val navController = rememberNavController()
+        var selectedTranscript by remember { mutableStateOf<TranscriptWithRecording?>(null) }
+
+        Scaffold(
+            bottomBar = {
+                // Only show bottom nav when not viewing transcript detail
+                if (selectedTranscript == null) {
+                    NavigationBar {
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentDestination = navBackStackEntry?.destination
+
+                        Screen.bottomNavItems.forEach { screen ->
+                            NavigationBarItem(
+                                icon = { Icon(screen.icon, contentDescription = screen.label) },
+                                label = { Text(screen.label) },
+                                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                                onClick = {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        ) { paddingValues ->
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Recordings.route,
+                modifier = Modifier.padding(paddingValues)
+            ) {
+                composable(Screen.Recordings.route) {
+                    RecordingsScreen()
+                }
+                composable(Screen.Transcripts.route) {
+                    if (selectedTranscript != null) {
+                        TranscriptDetailScreen(
+                            transcriptWithRecording = selectedTranscript!!,
+                            onBackClick = { selectedTranscript = null }
+                        )
+                    } else {
+                        TranscriptsScreen(
+                            onTranscriptClick = { selectedTranscript = it }
                         )
                     }
                 }
