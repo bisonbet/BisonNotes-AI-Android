@@ -114,6 +114,12 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    // AWS SDK for Kotlin
+    implementation(platform("aws.sdk.kotlin:bom:1.0.0"))
+    implementation("aws.sdk.kotlin:s3")
+    implementation("aws.sdk.kotlin:transcribe")
+    implementation("aws.sdk.kotlin:transcribestreaming")
+
     // ExoPlayer for audio playback
     implementation("androidx.media3:media3-exoplayer:1.2.0")
     implementation("androidx.media3:media3-ui:1.2.0")
