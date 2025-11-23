@@ -1,72 +1,120 @@
-# Audio Journal
+# BisonNotes AI - Android
 
-SwiftUI iOS + watchOS app for recording audio, transcribing it with local or cloud engines, and generating summaries, tasks, and reminders. Core Data powers persistence; background jobs handle long/complex processing; WatchConnectivity syncs state between watch and phone.
+Jetpack Compose Android app for recording audio, transcribing it with local or cloud engines, and generating summaries, tasks, and reminders. Room database powers persistence; WorkManager handles background processing.
 
-AVAILABLE ON THE APP STORE: https://apps.apple.com/us/app/bisonnotes-ai-voice-notes/id6749189425
+**Android Port Status**: 🚧 In Development - Phase 3 (Advanced Transcription)
+**Original iOS App**: https://apps.apple.com/us/app/bisonnotes-ai-voice-notes/id6749189425
 
-Quick links: [Usage Quick Start](USAGE.md) • [Full User Guide](HOW_TO_USE.md) • [Build & Test](#build-and-test) • [Architecture](#architecture)
+Quick links: [Android Port Planning](ANDROID_PORT_README.md) • [Implementation Roadmap](ANDROID_IMPLEMENTATION_ROADMAP.md) • [Build & Test](#build-and-test) • [Architecture](#architecture)
 
 ## Architecture
-- Data: Core Data model at `BisonNotes AI/BisonNotes_AI.xcdatamodeld` stores recordings, transcripts, summaries, and jobs.
-- Engines: Pluggable services for Apple on‑device NLP, OpenAI, Google AI Studio, AWS Bedrock/Transcribe, Whisper (REST), Wyoming streaming, and Ollama. Each engine pairs a service with a settings view.
-- Background: `BackgroundProcessingManager` coordinates queued work with retries, timeouts, and recovery. Large files are chunked and processed streaming‑first.
-- Watch Sync: `WatchConnectivityManager` (on iOS and watch targets) manages reachability, queued transfers, and state recovery.
-- UI: SwiftUI views under `Views/` implement recording, summaries, transcripts, and settings. AI-generated content uses MarkdownUI for professional formatting. View models isolate state and side effects.
+- **Data**: Room database stores recordings, transcripts, summaries, and processing jobs with automatic migrations.
+- **Transcription Engines**:
+  - **Android SpeechRecognizer** - On-device, privacy-focused, free
+  - **OpenAI Whisper API** - Cloud, high-quality, $0.006/min
+  - **AWS Transcribe** - Enterprise cloud, speaker diarization, $0.024/min
+  - **Local Whisper Server** - Self-hosted, complete privacy, unlimited free ⭐ **NEW**
+- **Background Processing**: WorkManager coordinates queued transcription and AI jobs with retry logic and constraints.
+- **UI**: Jetpack Compose with Material 3 Design. MVVM architecture with Hilt dependency injection. View models manage state with Kotlin Flow and StateFlow.
+- **Clean Architecture**: Domain, Data, and Presentation layers with clear separation of concerns.
 
 ## Project Structure
-- `BisonNotes AI/`: iOS app source
-  - Notable folders: `Models/`, `Views/`, `ViewModels/`, `OpenAI/`, `AWS/`, `Wyoming/`, `WatchConnectivity/`
-  - Assets: `Assets.xcassets`; config: `Info.plist`, `.entitlements`
-  - Uses Xcode's file-system synchronized groups, so dropping new Swift files into these folders automatically adds them to the project—no manual `.xcodeproj` edits are necessary.
-- `BisonNotes AI Watch App/`: watchOS companion app
-- Tests: `BisonNotes AITests/` (unit), `BisonNotes AIUITests/` (UI), plus watch tests
+```
+app/src/main/java/com/bisonnotesai/android/
+├── data/
+│   ├── db/           # Room database entities and DAOs
+│   ├── preferences/  # DataStore for settings
+│   ├── repository/   # Repository implementations
+│   └── transcription/
+│       ├── aws/      # AWS Transcribe engine
+│       ├── openai/   # OpenAI Whisper API engine
+│       └── whisper/  # Local Whisper server engine ⭐ NEW
+├── domain/
+│   ├── model/        # Domain models
+│   └── repository/   # Repository interfaces
+├── di/              # Hilt dependency injection modules
+├── ui/
+│   ├── screen/      # Compose screens
+│   ├── viewmodel/   # MVVM view models
+│   └── theme/       # Material 3 theming
+├── audio/           # Audio recording and playback
+└── transcription/   # Transcription service interfaces
+```
 
 ## Build and Test
-- Open in Xcode: `open "BisonNotes AI/BisonNotes AI.xcodeproj"`
-- Build (iOS): `xcodebuild -project "BisonNotes AI/BisonNotes AI.xcodeproj" -scheme "BisonNotes AI" -configuration Debug build`
-- Test (iOS): `xcodebuild test -project "BisonNotes AI/BisonNotes AI.xcodeproj" -scheme "BisonNotes AI" -destination 'platform=iOS Simulator,name=iPhone 15'`
-- Use the watch app scheme to run the watch target. SwiftPM resolves automatically in Xcode.
+- **Open in Android Studio**: File → Open → Select `BisonNotes-AI-Android`
+- **Build**: `./gradlew build` or Build → Make Project (Ctrl+F9 / ⌘F9)
+- **Run**: `./gradlew installDebug` or Run → Run 'app' (Shift+F10 / ⌃R)
+- **Test**: `./gradlew test` for unit tests, `./gradlew connectedAndroidTest` for instrumented tests
+- **Minimum SDK**: Android 8.0 (API 26)
+- **Target SDK**: Android 14 (API 34)
 
 ## Dependencies
 
-The project uses Swift Package Manager for dependency management. Major dependencies include:
+The project uses Gradle for dependency management. Major dependencies include:
+
+### **Core Android**
+- **Jetpack Compose**: Modern declarative UI with Material 3
+- **Room**: Local database with compile-time SQL verification
+- **Hilt**: Dependency injection framework
+- **WorkManager**: Background job processing
+- **DataStore**: Type-safe data storage
+
+### **Networking & APIs**
+- **Retrofit 2.9.0**: REST API client
+- **OkHttp 4.12.0**: HTTP client with interceptors
+- **Gson**: JSON serialization/deserialization
 
 ### **Cloud Services**
-- **AWS SDK for Swift**: Cloud transcription and AI processing
-  - `AWSBedrock` & `AWSBedrockRuntime`: Claude AI models
-  - `AWSTranscribe` & `AWSTranscribeStreaming`: Speech-to-text
-  - `AWSS3`: File storage and retrieval
-  - `AWSClientRuntime`: Core AWS functionality
+- **AWS SDK for Kotlin 1.0.0**: Cloud transcription and AI
+  - `aws.sdk.kotlin:transcribe`: AWS Transcribe service
+  - `aws.sdk.kotlin:s3`: S3 file storage
+  - Authentication with static credentials
 
-### **UI & Formatting**
-- **MarkdownUI**: Professional markdown rendering for AI-generated summaries, headers, lists, and formatted text
+### **Audio**
+- **MediaRecorder**: Native audio recording
+- **MediaPlayer**: Audio playback
+- **SpeechRecognizer**: On-device speech recognition
 
-### **Apple Frameworks**
-- **WatchConnectivity**: Syncing between iPhone and Apple Watch
-- **Core Data**: Local data persistence
-- **AVFoundation**: Audio recording and playback
-- **Speech**: On-device speech recognition
-
-All external dependencies are resolved automatically via Swift Package Manager when building in Xcode.
+All dependencies are resolved automatically via Gradle when building in Android Studio.
 
 ## Local Dev Setup
-- Requirements: macOS with Xcode (15+ recommended) and Command Line Tools (`xcode-select --install`).
-- Clone/fork the repo, then open: `open "BisonNotes AI/BisonNotes AI.xcodeproj"`.
-- Select the "BisonNotes AI" scheme (iOS) or the watch scheme, choose a Simulator/device, and Run/ Test.
-- Branch/PR: create a feature branch in your fork, push changes, and open a PR. Include build/test results and screenshots for UI changes.
+- **Requirements**:
+  - Android Studio Hedgehog (2023.1.1) or newer
+  - JDK 17 or higher
+  - Android SDK with API 26+ and API 34
+- **Setup**:
+  1. Clone the repo: `git clone https://github.com/bisonbet/BisonNotes-AI-Android.git`
+  2. Open in Android Studio: File → Open → Select `BisonNotes-AI-Android`
+  3. Wait for Gradle sync to complete
+  4. Select a device/emulator and click Run
+- **Branch/PR**: Create feature branch, push changes, open PR. Include build/test results and screenshots for UI changes.
 
 ## Key Modules
-- Recording: `EnhancedAudioSessionManager`, `AudioFileChunkingService`, `AudioRecorderViewModel`
-- Transcription: `OpenAITranscribeService`, `WhisperService`, `WyomingWhisperClient`, `AWSTranscribeService`
-- Summarization: `OpenAISummarizationService`, `GoogleAIStudioService`, `AWSBedrockService`, `EnhancedAppleIntelligenceEngine`
-- UI: `SummariesView`, `SummaryDetailView`, `TranscriptionProgressView`, `AITextView` (with MarkdownUI)
-- Persistence: `Persistence`, `CoreDataManager`, models under `Models/`
-- Background: `BackgroundProcessingManager`
-- Watch: `WatchConnectivityManager` (both targets)
+- **Recording**: `AudioRecorder`, `AudioPlayer`, `RecordingFileManager`, `AudioRecorderViewModel`
+- **Transcription Engines**:
+  - `AndroidSpeechRecognizer` - On-device Android SpeechRecognizer
+  - `OpenAIWhisperEngine` - Cloud OpenAI Whisper API
+  - `AWSTranscribeEngine` - Cloud AWS Transcribe with S3 upload
+  - `LocalWhisperEngine` - Privacy-focused local Whisper server ⭐ **NEW**
+- **UI**:
+  - Screens: `RecordingsScreen`, `TranscriptsScreen`, `TranscriptDetailScreen`
+  - Settings: `OpenAISettingsScreen`, `AWSSettingsScreen`, `WhisperSettingsScreen` ⭐
+  - ViewModels: `AudioRecorderViewModel`, `TranscriptsViewModel`, `WhisperSettingsViewModel` ⭐
+- **Data**: `RecordingEntity`, `TranscriptEntity`, `SummaryEntity`, `ProcessingJobEntity`
+- **Repositories**: `RecordingRepository`, `TranscriptRepository`, `SummaryRepository`, `ProcessingJobRepository`
+- **Background**: `TranscriptionWorker` with WorkManager
 
 ## Configuration
-- Secrets are entered in‑app via settings views (OpenAI, Google, AWS, Ollama, Whisper). Do not commit API keys.
-- Enable required capabilities in Xcode (Microphone, Background Modes, iCloud if used). Keep `Info.plist` and `.entitlements` aligned with features.
+- **API Keys**: Enter credentials in-app via settings screens:
+  - OpenAI Settings: API key for Whisper API
+  - AWS Settings: Access Key ID, Secret Key, S3 bucket, region
+  - Local Whisper Settings: Server URL, port, protocol (REST/Wyoming)
+- **Permissions**: Required permissions in `AndroidManifest.xml`:
+  - `RECORD_AUDIO` - Audio recording
+  - `WRITE_EXTERNAL_STORAGE` / `READ_EXTERNAL_STORAGE` - File storage (API < 29)
+  - `INTERNET` - Cloud transcription services
+- **Security**: Never commit API keys or credentials. Use `.gitignore` for local config files.
 
 ## Contributing
 See AGENTS.md for repository guidelines (style, structure, commands, testing, PRs). Follow the Local Dev Setup above to run and validate changes before opening a PR.
