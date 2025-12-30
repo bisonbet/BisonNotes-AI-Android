@@ -126,8 +126,9 @@ dependencies {
     implementation("androidx.media3:media3-ui:1.2.0")
     implementation("androidx.media3:media3-session:1.2.0")
 
-    // Markdown rendering
-    implementation("com.github.jeziellago:compose-markdown:0.3.6")
+    // Markdown rendering (RichText library)
+    implementation("com.halilibo.compose-richtext:richtext-ui-material3:0.17.0")
+    implementation("com.halilibo.compose-richtext:richtext-commonmark:0.17.0")
 
     // PDF generation
     implementation("com.itextpdf:itext7-core:7.2.5")

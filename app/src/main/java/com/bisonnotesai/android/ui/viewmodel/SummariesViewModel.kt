@@ -50,7 +50,7 @@ class SummariesViewModel @Inject constructor(
     }
 
     fun getSummaryById(id: String): StateFlow<Summary?> {
-        return summaryRepository.getSummaryById(id)
+        return summaryRepository.getSummaryFlow(id)
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
