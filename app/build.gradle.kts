@@ -119,14 +119,26 @@ dependencies {
     implementation("aws.sdk.kotlin:s3")
     implementation("aws.sdk.kotlin:transcribe")
     implementation("aws.sdk.kotlin:transcribestreaming")
+    implementation("aws.sdk.kotlin:bedrockruntime")
 
     // ExoPlayer for audio playback
     implementation("androidx.media3:media3-exoplayer:1.2.0")
     implementation("androidx.media3:media3-ui:1.2.0")
     implementation("androidx.media3:media3-session:1.2.0")
 
+    // Markdown rendering (RichText library)
+    implementation("com.halilibo.compose-richtext:richtext-ui-material3:0.17.0")
+    implementation("com.halilibo.compose-richtext:richtext-commonmark:0.17.0")
+
+    // PDF generation
+    implementation("com.itextpdf:itext7-core:7.2.5")
+
+    // Google AI (Gemini)
+    implementation("com.google.ai.client.generativeai:generativeai:0.1.2")
+
     // Location Services
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
